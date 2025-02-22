@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Estudiantes</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Lista Asistencias a extraclases IJR</h1>
+
+    <!-- Sección para subir imágenes -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="card-title">Subir Imagen por Curso</h2>
+        <form id="upload-form" enctype="multipart/form-data" class="row g-3">
+          <div class="col-md-6">
+            <input type="file" name="image" id="image-input" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <input type="text" name="course" id="course-input" class="form-control" placeholder="Nombre del curso" required>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">Subir Imagen</button>
+          </div>
+        </form>
+        <div id="uploaded-image" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Tabla de estudiantes -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Curso</th>
+            <th>Asistencias</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="students-table">
+          <!-- Los datos se llenarán aquí dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Función para obtener los datos de los estudiantes desde el servidor
+    async function fetchStudents() {
+      try {
+        const response = await fetch('http://localhost:3000/students');
+        const students = await response.json();
+
+        // Selecciona el cuerpo de la tabla
+        const tableBody = document.getElementById('students-table');
+
+        // Limpia la tabla antes de llenarla
+        tableBody.innerHTML = '';
+
+        // Itera sobre los estudiantes y crea filas en la tabla
+        students.forEach(student => {
+          const row = document.createElement('tr');
+
+          // Crea celdas para el nombre, curso y asistencias
+          const nameCell = document.createElement('td');
+          nameCell.textContent = student.name;
+
+          const courseCell = document.createElement('td');
+          courseCell.textContent = student.course;
+
+          const attendanceCell = document.createElement('td');
+          attendanceCell.textContent = student.attendance.map(a => (a ? '✔️' : '❌')).join(', ');
+
+          // Botones para marcar asistencia, falta y eliminar el último registro
+          const actionsCell = document.createElement('td');
+          const attendanceButton = document.createElement('button');
+          attendanceButton.textContent = 'Marcar Asistencia';
+          attendanceButton.className = 'btn btn-success btn-sm me-2';
+          attendanceButton.onclick = async () => {
+            await markAttendance(student._id, true);
+            fetchStudents(); // Actualiza la tabla después de marcar asistencia
+          };
+
+          const absenceButton = document.createElement('button');
+          absenceButton.textContent = 'Marcar Falta';
+          absenceButton.className = 'btn btn-danger btn-sm me-2';
+          absenceButton.onclick = async () => {
+            await markAttendance(student._id, false);
+            fetchStudents(); // Actualiza la tabla después de marcar falta
+          };
+
+          const deleteLastButton = document.createElement('button');
+          deleteLastButton.textContent = 'Eliminar Último Registro';
+          deleteLastButton.className = 'btn btn-warning btn-sm';
+          deleteLastButton.onclick = async () => {
+            await deleteLastAttendance(student._id);
+            fetchStudents(); // Actualiza la tabla después de eliminar el último registro
+          };
+
+          actionsCell.appendChild(attendanceButton);
+          actionsCell.appendChild(absenceButton);
+          actionsCell.appendChild(deleteLastButton);
+
+          // Agrega las celdas a la fila
+          row.appendChild(nameCell);
+          row.appendChild(courseCell);
+          row.appendChild(attendanceCell);
+          row.appendChild(actionsCell);
+
+          // Agrega la fila al cuerpo de la tabla
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error al obtener los estudiantes:', error);
+      }
+    }
+
+    // Función para marcar asistencia o falta
+    async function markAttendance(studentId, present) {
+      try {
+        await fetch(`http://localhost:3000/students/${studentId}/attendance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ present }),
+        });
+      } catch (error) {
+        console.error('Error al marcar asistencia/falta:', error);
+      }
+    }
+
+    // Función para eliminar el último registro de asistencia o falta
+    async function deleteLastAttendance(studentId) {
+      try {
+        await fetch(`http://localhost:3000/students/${studentId}/attendance`, {
+          method: 'DELETE',
+        });
+      } catch (error) {
+        console.error('Error al eliminar el último registro:', error);
+      }
+    }
+
+    // Función para subir imágenes
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        const response = await fetch('http://localhost:3000/uploads', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        document.getElementById('uploaded-image').innerHTML = `<img src="${data.url}" alt="Imagen subida" class="img-fluid rounded">`;
+      } catch (error) {
+        console.error('Error al subir la imagen:', error);
+      }
+    });
+
+    // Llama a la función para cargar los datos al cargar la página
+    fetchStudents();
+  </script>
+</body>
+</html>
