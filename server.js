@@ -7,11 +7,15 @@ const app = express();
 const courseRoutes = require('./routes/courses');
 const studentRoutes = require('./routes/students');
 const uploadRoutes = require('./routes/uploads');
+const cors = require('cors'); // Importar el paquete cors
 const PORT = process.env.PORT || 3000; // Usar el puerto definido en la variable de entorno o el puerto 3000 por defecto
 
 // Middleware
 app.use(bodyParser.json()); // Parsear JSON en las solicitudes
 app.use(express.static(path.join(__dirname, 'public'))); // Servir archivos estáticos desde la carpeta "public"
+
+// Habilitar CORS para todas las solicitudes
+app.use(cors());
 
 // Rutas
 app.use('/courses', courseRoutes); // Rutas para cursos
