@@ -55,7 +55,7 @@
     // Función para obtener los datos de los estudiantes desde el servidor
     async function fetchStudents() {
       try {
-        const response = await fetch('http://localhost:3000/students');
+        const response = await fetch('http://localhost:1000/students');
         const students = await response.json();
 
         // Selecciona el cuerpo de la tabla
@@ -125,7 +125,7 @@
     // Función para marcar asistencia o falta
     async function markAttendance(studentId, present) {
       try {
-        await fetch(`http://localhost:3000/students/${studentId}/attendance`, {
+        await fetch(`http://localhost:1000/students/${studentId}/attendance`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ present }),
@@ -138,7 +138,7 @@
     // Función para eliminar el último registro de asistencia o falta
     async function deleteLastAttendance(studentId) {
       try {
-        await fetch(`http://localhost:3000/students/${studentId}/attendance`, {
+        await fetch(`http://localhost:1000/students/${studentId}/attendance`, {
           method: 'DELETE',
         });
       } catch (error) {
@@ -152,7 +152,7 @@
       const formData = new FormData(e.target);
 
       try {
-        const response = await fetch('http://localhost:3000/uploads', {
+        const response = await fetch('http://localhost:10/uploads', {
           method: 'POST',
           body: formData,
         });
