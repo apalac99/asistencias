@@ -7,6 +7,7 @@ const app = express();
 const courseRoutes = require('./routes/courses');
 const studentRoutes = require('./routes/students');
 const uploadRoutes = require('./routes/uploads');
+const PORT = process.env.PORT || 3000; // Usar el puerto definido en la variable de entorno o el puerto 3000 por defecto
 
 // Middleware
 app.use(bodyParser.json()); // Parsear JSON en las solicitudes
@@ -23,7 +24,7 @@ app.get('/', (req, res) => {
 });
 
 // Configuración del puerto
-const PORT = process.env.PORT || 3000; // Usar el puerto definido en la variable de entorno o el puerto 3000 por defecto
+
 
 // Iniciar el servidor
 app.listen(PORT, () => {
